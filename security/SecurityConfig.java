@@ -23,6 +23,8 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.OAuth2TokenType;
@@ -33,6 +35,7 @@ import org.springframework.security.oauth2.server.authorization.token.JwtEncodin
 import org.springframework.security.oauth2.server.authorization.token.OAuth2TokenCustomizer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.MediaTypeRequestMatcher;
 
 @Configuration
@@ -46,6 +49,7 @@ public class SecurityConfig {
         OAuth2AuthorizationServerConfiguration.applyDefaultSecurity(http);
         http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
                 .oidc(Customizer.withDefaults());	// Enable OpenID Connect 1.0
+
         http
                 // Redirect to the login page when not authenticated from the
                 // authorization endpoint
@@ -70,13 +74,27 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .cors(cors -> cors.disable())
                 .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("/signup").permitAll()
                         .anyRequest().authenticated()
                 )
                 // Form login handles the redirect to the login page from the
                 // authorization server filter chain
-                .httpBasic(Customizer.withDefaults());
+                .formLogin(Customizer.withDefaults());
         return http.build();
     }
+
+//    @Order(1)
+//    @Bean
+//    public SecurityFilterChain registerSecurityFilterChain(HttpSecurity httpSecurity) throws Exception{
+//        return httpSecurity
+//                .securityMatcher(new AntPathRequestMatcher("/users/signup/**"))
+//                .csrf(AbstractHttpConfigurer::disable)
+//                .authorizeHttpRequests(auth ->
+//                        auth.anyRequest().permitAll())
+//                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+//                .build();
+//    }
+
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() {

@@ -8,6 +8,7 @@ import com.example.userservice.services.UserService;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
+@RequestMapping(path = "/users")
 public class UserController {
 
     private UserService userService;
